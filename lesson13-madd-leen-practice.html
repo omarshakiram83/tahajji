@@ -343,7 +343,9 @@ let cur = -1;                                   // الحرف المحدد ال�
 const order = layout.filter(g => g >= 0);      // ترتيب الكتاب
 /* صوت الشيخ: كل حرف له تسجيل (اختياري)، يُسمع عند تحديده */
 const sounds = (CFG.audio || []).map(src => src ? { src } : null);
-const titleSound = CFG.titleAudio ? { src: CFG.titleAudio } : null;   // تسجيل العنوان (اختياري)
+const titleSound = CFG.titleAudio ? { src: CFG.titleAudio } : null;
+/* خطوات القراءة (اختياري): كل خطوة تسجيل واحد ومعه المربعات التي تُحدَّد معًا، مثل: الأول، الثاني، الأول والثاني، الثالث، الثلاثة */
+const steps = (CFG.steps || []).map(st => ({ snd: { src: st.a }, g: st.g }));   // تسجيل العنوان (اختياري)
 let playing = null, titleSaid = false;
 /* مشغّل واحد لكل التسجيلات: المتصفحات (خاصة آيفون وسفاري) تسمح بالتشغيل التلقائي المتتابع
    فقط لمشغّل سبق تشغيله بضغطة، فنستعمل المشغّل نفسه للعنوان وكل الحروف */
@@ -385,8 +387,19 @@ async function playLesson(){
   if (auto) { stopAuto(); return; }
   const run = auto = Date.now();
   playBtn.classList.add('on'); playBtn.textContent = '■ إيقاف';
-  if (cur >= 0) { cards[cur].classList.remove('sel'); cur = -1; updSel(); }
+  clearSel(); if (cur >= 0) { cur = -1; updSel(); }
   if (titleSound) { titleSaid = true; await untilEnd(titleSound, run); if (auto !== run) return; await wait(GAP, run); }
+  if (steps.length) {
+    for (let k = 0; k < steps.length; k++) {
+      if (auto !== run) return;
+      const st = steps[k]; clearSel(); st.g.forEach(g => cards[g].classList.add('sel'));
+      cur = st.g[st.g.length - 1]; updSel(); if (CFG.scroll) cards[st.g[0]].scrollIntoView({block: 'center', behavior: 'smooth'});
+      await untilEnd(st.snd, run);
+      if (auto !== run) return;
+      if (k < steps.length - 1) await wait(GAP, run);
+    }
+    if (auto === run) stopAuto(); return;
+  }
   for (const g of order) {
     if (auto !== run) return;
     if (cur >= 0) cards[cur].classList.remove('sel');
@@ -401,7 +414,7 @@ if (CFG.video) {   // تحميل فيديو الدرس: صوت وصورة كتش
   const v = document.getElementById('vid'); v.href = CFG.video; v.setAttribute('download', CFG.video.split('/').pop());
   v.addEventListener('click', e => e.stopPropagation()); document.body.classList.add('has-video');
 }
-if (sounds.some(Boolean) || titleSound) {
+if (sounds.some(Boolean) || titleSound || steps.length) {
   document.body.classList.add('has-audio');
   document.querySelectorAll('#ctl input').forEach(r => {
     r.checked = (r.value === 'on') === soundOn;
@@ -433,11 +446,12 @@ if (titleSound) {                      // الضغط على العنوان يُ�
 }
 function toggleSel(g){
   stopAuto();
-  if (cur >= 0) cards[cur].classList.remove('sel');
+  clearSel();
   cur = g; cards[g].classList.add('sel');
   if (CFG.scroll) cards[g].scrollIntoView({block: 'nearest', behavior: 'smooth'});
   updSel(); say(g);
 }
+function clearSel(){ document.querySelectorAll('.g.sel').forEach(c => c.classList.remove('sel')); }   // also clears the 2-3 squares lit together by a step
 function updSel(){
   cnt.textContent = cur < 0 ? '\u00A0' : AR(order.indexOf(cur) + 1) + ' / ' + AR(groups.length);   // keeps its line even when empty, so nothing jumps
 }
