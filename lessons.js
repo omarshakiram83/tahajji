@@ -6,7 +6,7 @@ window.TAHAJJI_LESSONS = [
   { n: 2, name: "الدرس الثاني", title: "الحروف المركبة",
     pages: [ { file: "lesson02-compound.html", title: "الحروف المركبة" } ] },
   { n: 3, name: "الدرس الثالث", title: "الحروف المتحركة",
-    pages: [ { file: "lesson03-fatha.html", title: "الفتحة" }, { file: "lesson03-damma.html", title: "الضمة" }, { file: "lesson03-kasra.html", title: "الكسرة" }, { file: "lesson03-harakat.html", title: "الحركات" } ] },
+    pages: [ { file: "lesson03-all.html", title: "الجداول الثلاثة" }, { file: "lesson03-fatha.html", title: "الفتحة" }, { file: "lesson03-damma.html", title: "الضمة" }, { file: "lesson03-kasra.html", title: "الكسرة" }, { file: "lesson03-harakat.html", title: "الحركات" } ] },
   { n: 4, name: "الدرس الرابع", title: "تطبيقات على الحركات",
     pages: [ { file: "lesson04-harakat-practice.html", title: "تطبيقات على الحركات" } ] },
   { n: 5, name: "الدرس الخامس", title: "الحروف المنونة",
