@@ -408,13 +408,31 @@ function fitCards(){
     const gapPx = 16;
     const ctl = document.getElementById('ctl'), top = document.getElementById('top');
     if (innerWidth > innerHeight) { if (ctl.parentNode !== sd) sd.append(ctl); }
-    else { if (ctl.parentNode !== top) top.append(ctl);
-      ctl.style.top = (Math.max(ls.offsetTop + ls.offsetHeight, sd.offsetTop + sd.offsetHeight) + 4) + 'px'; }
+    else { if (ctl.parentNode !== top) top.append(ctl); }
     if (innerWidth > innerHeight) {
       const lg = document.getElementById('logo'), lgW = lg.offsetWidth ? lg.offsetWidth + 0.008 * innerWidth : 0;
       const pad = Math.max(ls.offsetWidth + lgW, sd.offsetWidth) + gapPx;
       ttl.style.paddingInline = pad + 'px'; ttl.style.paddingTop = '0px';
-    } else { ttl.style.paddingInline = '0px'; ttl.style.paddingTop = (Math.max(ls.offsetHeight, sd.offsetHeight, document.getElementById('logo').offsetHeight) + (ctl.offsetHeight ? ctl.offsetHeight + 10 : 0)) + 'px'; }
+    } else {   // phone, portrait: lesson label, then the lesson title, then the controls
+      const lg = document.getElementById('logo'), mn = ttl.querySelector('.main'), cn = document.getElementById('cnt');
+      ttl.style.paddingInline = '0px'; ttl.style.paddingTop = '0px'; ttl.style.paddingBottom = '0px';
+      const keep = cn.textContent; cn.textContent = '٨٨ / ٨٨';          // room the counter needs while a square is selected
+      const sdShown = getComputedStyle(sd).display !== 'none';
+      const cR = sdShown ? cn.getBoundingClientRect() : null;
+      const lR = ls.getBoundingClientRect(), gR = lg.getBoundingClientRect(), tR = ttl.getBoundingClientRect();
+      const R = innerWidth - Math.min(lR.left, gR.left) + 12, L = Math.max(cR && cR.width ? cR.right : 0, 0.022 * innerWidth + 4.6 * parseFloat(getComputedStyle(cn).fontSize), R - 12) + 12;   // at least as much room on the left as the label takes on the right
+      cn.textContent = keep;
+      const headBottom = Math.max(lR.bottom, gR.bottom, cR && cR.width ? cR.bottom : 0);
+      if (ls.offsetWidth && !ttl.querySelector('.sub') && mn.getBoundingClientRect().width <= innerWidth - R - L) {   // the title fits beside the label
+        ttl.style.paddingRight = R + 'px'; ttl.style.paddingLeft = L + 'px';
+        ttl.style.paddingTop = Math.max(0, lR.top - tR.top) + 'px';
+      } else ttl.style.paddingTop = (headBottom - tR.top + 4) + 'px';                     // title on its own line under the label
+      if (ctl.offsetHeight) {
+        ttl.style.paddingBottom = (ctl.offsetHeight + 14) + 'px';
+        const t2 = ttl.getBoundingClientRect(), topR = top.getBoundingClientRect();
+        ctl.style.top = (t2.bottom - topR.top - ctl.offsetHeight - 6) + 'px';
+      }
+    }
     document.body.style.setProperty('--top-h', (Math.max(document.getElementById('top').getBoundingClientRect().bottom, sd.getBoundingClientRect().bottom) + 4) + 'px');
     const cv = document.createElement('canvas').getContext('2d');
     cv.font = '700 100px Tahajji'; cv.direction = 'rtl';
